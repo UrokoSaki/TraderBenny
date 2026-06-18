@@ -1053,12 +1053,41 @@
     btn.disabled = true;
     btn.style.opacity = '0.7';
 
-    setTimeout(() => {
-      document.getElementById('contactForm').style.opacity = '0.4';
-      document.getElementById('contactForm').style.pointerEvents = 'none';
-      success.style.display = 'block';
-      btn.textContent = 'Sent ✓';
-    }, 900);
+    // Submit to Formspree via Ajax
+    fetch('https://formspree.io/f/xrevvnno', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        experience: exp,
+        message: message,
+        _subject: 'New Mentorship Application — ' + name
+      })
+    })
+    .then(response => {
+      if (response.ok) {
+        document.getElementById('contactForm').style.opacity = '0.4';
+        document.getElementById('contactForm').style.pointerEvents = 'none';
+        success.style.display = 'block';
+        btn.textContent = 'Sent ✓';
+      } else {
+        return response.json().then(data => {
+          throw new Error(data.error || 'Submission failed');
+        });
+      }
+    })
+    .catch(err => {
+      error.textContent = 'Something went wrong. Please try again or email me directly.';
+      error.style.display = 'block';
+      btn.textContent = 'Send Application';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      console.error('Form submission error:', err);
+    });
   }
 
   function showPage(name) {
